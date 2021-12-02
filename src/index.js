@@ -9,10 +9,9 @@ app.use(express.json());
 // Middleware
 function verifyExistsAcountCPG(req,res,next){
 
-
     const { cpf } = req.headers;
      
-    const customer = customers.find(customer => customer.cpf === cpf);
+    const customer = customers.find((customer) => customer.cpf === cpf);
   
     if(!customer){
 
@@ -23,7 +22,7 @@ function verifyExistsAcountCPG(req,res,next){
 
     return next();
 
-}
+} 
 
 app.post("/account", (req, res) => {
     const { cpf, name } = req.body
@@ -55,6 +54,24 @@ app.get("/statement", verifyExistsAcountCPG, (req,res) =>{
 
     return res.json(customer.statement)
 
+})
+
+app.post("/deposit", verifyExistsAcountCPG,(req,res) =>{
+   
+    const { customer } = req
+    const { description, amount} = req.body
+
+    const statementOperation = {
+         description,
+         amount,
+         created_at : new Date(),
+         type : "Credit"
+
+    }
+
+    customer.statement.push(statementOperation);
+
+      return res.status(201).send();
 })
 
 
