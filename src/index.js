@@ -6,12 +6,25 @@ const customers = [];
 
 const app = express();
 app.use(express.json());
-/**
- * CPF - STRING
- * NAME - STRING
- * ID - UUID
- * STATEMENT(EXTRATO) - [] -
- */
+// Middleware
+function verifyExistsAcountCPG(req,res,next){
+
+
+    const { cpf } = req.headers;
+     
+    const customer = customers.find(customer => customer.cpf === cpf);
+  
+    if(!customer){
+
+        return res.status(400).json({error: "Customer not found"})
+    }
+
+    req.customer = customer
+
+    return next();
+
+}
+
 app.post("/account", (req, res) => {
     const { cpf, name } = req.body
     
@@ -34,16 +47,11 @@ app.post("/account", (req, res) => {
     return res.status(201).send();
 })
 
-app.get("/statement", (req,res) =>{
+//app.use(verifyExistsAcountCPG) //  Middkeware Para todas as rotas
 
-    const { cpf } = req.headers;
-     
-    const customer = customers.find(customer => customer.cpf === cpf);
-  
-    if(!customer){
-
-        return response.status(400).json({error: "Customer not found"})
-    }
+app.get("/statement", verifyExistsAcountCPG, (req,res) =>{
+      
+      const { customer } = req
 
     return res.json(customer.statement)
 
